@@ -14,6 +14,8 @@ const connectDB = async () => {
       .connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/qr_attendance', {
         useNewUrlParser: true,
         useUnifiedTopology: true,
+        // Fail fast in serverless invocations instead of hanging the request.
+        serverSelectionTimeoutMS: 8000,
       })
       .then((conn) => {
         console.log(`MongoDB Connected: ${conn.connection.host}`);
