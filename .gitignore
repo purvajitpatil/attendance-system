@@ -20,6 +20,13 @@ yarn-debug.log*
 yarn-error.log*
 *.log
 
+# Vercel
+.vercel/
+.vercel
+
+# Local secrets
+.mongo-uri
+
 # Editor & OS files
 .vscode/
 .idea/

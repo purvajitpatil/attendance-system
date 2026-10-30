@@ -1,17 +1,32 @@
 const mongoose = require('mongoose');
 
+// Cached connection so serverless invocations reuse a warm MongoDB connection
+// instead of opening a new one per request.
+let connectionPromise = null;
+
 const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/qr_attendance', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-    return conn;
-  } catch (error) {
-    console.error(`MongoDB Connection Error: ${error.message}`);
-    process.exit(1);
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
   }
+
+  if (!connectionPromise) {
+    connectionPromise = mongoose
+      .connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/qr_attendance', {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      })
+      .then((conn) => {
+        console.log(`MongoDB Connected: ${conn.connection.host}`);
+        return conn.connection;
+      })
+      .catch((error) => {
+        // Clear the cache so a later attempt can retry.
+        connectionPromise = null;
+        throw error;
+      });
+  }
+
+  return connectionPromise;
 };
 
 module.exports = connectDB;

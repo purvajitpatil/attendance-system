@@ -1,0 +1,22 @@
+{
+  "name": "qr-attendance-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Smart QR-based Attendance Management System (React client + Express/MongoDB server)",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "setup": "npm install && npm install --prefix server && npm install --prefix client",
+    "dev": "concurrently -n server,client -c blue,green \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build": "npm run build --prefix client",
+    "start": "npm start --prefix server",
+    "test": "npm test --prefix server",
+    "seed:teacher": "npm run seed:teacher --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

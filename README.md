@@ -168,9 +168,9 @@ Copy the example environment template in `client`:
 cd client
 cp .env.example .env
 ```
-Edit `client/.env`:
+Editing `client/.env` is optional. The client calls `/api` on its own origin, and the Vite dev server proxies `/api` to `http://localhost:5000`, so no configuration is needed for local development. Set `VITE_API_URL` only when the API is hosted on a different domain:
 ```env
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=https://attendance-api.example.com/api
 ```
 
 ---
@@ -213,6 +213,41 @@ npm run dev
 *The Vite development server will start on `http://localhost:5173`.*
 
 Open your browser and navigate to `http://localhost:5173`.
+
+---
+
+## Running Both Servers With One Command
+
+From the repository root:
+```bash
+npm run setup   # installs root, server and client dependencies
+npm run dev     # starts the Express API (5000) and the Vite client (5173)
+```
+
+---
+
+## Deployment on Vercel
+
+The repository deploys as a **single Vercel project**: Vite builds the React client into `client/dist` (served from the project domain) and the Express API runs as a serverless function at `/api/*` through `api/[...path].js`. Because the client and API share one domain, no CORS or `VITE_API_URL` setup is required.
+
+1. Create a free MongoDB Atlas cluster (M0), allow network access from `0.0.0.0/0`, and copy the `mongodb+srv://` connection string.
+2. Import the repository in Vercel with the **Other** framework preset. `vercel.json` already provides the install command, build command and output directory.
+3. Add the environment variables in **Project Settings -> Environment Variables**:
+
+   | Variable | Example | Notes |
+   |---|---|---|
+   | `MONGODB_URI` | `mongodb+srv://user:pass@cluster0.xxxxx.mongodb.net/qr_attendance` | Required |
+   | `JWT_SECRET` | long random string | Required |
+   | `CLIENT_URL` | `https://your-project.vercel.app` | Optional; same-origin requests are allowed automatically |
+
+4. Seed the teacher account against Atlas (run once, locally):
+   ```bash
+   cd server
+   MONGODB_URI="mongodb+srv://..." npm run seed:teacher
+   ```
+5. Deploy and open `https://your-project.vercel.app`.
+
+`api/[...path].js` caches the MongoDB connection between invocations, and `GET /api/health` responds without requiring the database.
 
 ---
 
